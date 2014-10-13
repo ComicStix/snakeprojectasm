@@ -65,10 +65,10 @@ wall: .asciiz "****************************************************************"
  	      "****************************************************************",
 snakeBuffer: .byte 4,31,5,31,6,31,7,31,8,31,9,31,10,31,11,31
 snakeBufferExt: .space 512
+
 .text
 la $t4,wall
-#byte array
-#512 bytes
+
 assembleBoard:
 lb $t5,0($t4)
 beq $t5,0x2a,foundAsterik
@@ -94,16 +94,37 @@ li $t6,0
 addi $t4,$t4,1
 j assembleBoard
 
-setSnakes:
-
 end:
+li $t0,0
+li $t1,0
+li $t2,0
+li $t3,0
+li $t4,4 #counter for frog placements
+li $t5,31 #stores random x value
+li $t6,0 #stores random y value
+li $t7,0
+
+setSnakes:
+bgt $t4,10,end2
+li $a2,2
+move $a0,$t4
+move $a1,$t5
+jal _setLED
+addi $t4,$t4,1
+j setSnakes
+
+end2:
+li $t0,0
+li $t1,0
+li $t2,0
+li $t3,0
 li $t4,0 #counter for frog placements
 li $t5,0 #stores random x value
 li $t6,0 #stores random y value
 li $t7,0
 
 placeFrogs:
-bgt $t4,32,setSnake #32 possible snakes
+bgt $t4,32,exit #32 possible snakes
 addi $t4,$t4,1
 li $v0,42
 li $a0,5
@@ -126,17 +147,6 @@ validPosition:
 jal _setLED
 addi $t7,$t7,1 #counts number of frogs on board
 j placeFrogs
-
-setSnake:
-bgt $t5,10,exit
-li $t5,4 #x-value of snake
-li $t6,31 #y-value of snake
-li $a2,2
-move $a0,$t5
-move $a1,$t6
-jal _setLED
-addi $t5,$t5,1
-j setSnake
 
 exit:
 li $v0,10
