@@ -160,6 +160,8 @@ li $a0,200
 syscall
 jal _queue_insert
 jal _queue_remove
+addi $v0,$v0,1
+sb $v0,0($t4)
 j gameLoop
 
 _queue_insert:
@@ -184,8 +186,6 @@ move $a0,$v0
 move $a1,$v1
 li $a2,0
 jal _setLED
-addi $v0,$v0,1
-sb $v0,0($t4)
 lw $ra,0($sp)
 addi $sp,$sp,4
 jr $ra
