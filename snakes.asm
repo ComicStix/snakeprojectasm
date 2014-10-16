@@ -1,4 +1,6 @@
-
+#andi $a0,$a0,63
+#$a0 is x or y value
+#x + whatever and then do an andi
 .data
 wall: .asciiz "****************************************************************",
 	      "*                                                              *",
@@ -154,10 +156,17 @@ la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
 
 gameLoop:
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
+beq $v0,0xE2,moveLeft
+beq $v0,0xE3,moveRight
+j gameLoop
 
 moveUp:
 jal _queue_peek_end
 addi $s4,$s1,-1
+andi $s4,$s4,63
 move $a0,$s0
 move $a1,$s4
 jal _queue_insert
@@ -165,6 +174,11 @@ jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
+jal keyPress
+beq $v0,0xE1,moveDown
+beq $v0,0xE2,moveLeft
+beq $v0,0xE3,moveRight
+j moveUp
 
 moveLeft:
 jal _queue_peek_end
@@ -176,7 +190,11 @@ jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
-j moveUp
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
+beq $v0,0xE3,moveRight
+j moveLeft
 
 moveDown:
 jal _queue_peek_end
@@ -188,9 +206,11 @@ jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE2,moveLeft
+beq $v0,0xE3,moveRight
 j moveDown
-
-
 
 moveRight:
 jal _queue_peek_end
@@ -202,6 +222,10 @@ jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
+beq $v0,0xE2,moveLeft
 j moveRight
 
 _queue_insert:
@@ -232,6 +256,15 @@ jr $ra
 _queue_peek_end:
 lb $s0,0($t6) #returns x-value
 lb $s1,1($t6) #returns y-value
+jr $ra
+
+keyPress:
+la $t1,0xffff0000			
+#li $v0,0				
+lw $t0,0($t1)			
+beq $t0,$zero,keyPressJump	
+lw $v0,4($t1)
+keyPressJump:
 jr $ra
 
 exit:
