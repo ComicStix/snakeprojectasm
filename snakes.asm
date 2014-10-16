@@ -105,27 +105,8 @@ li $t5,31 #stores random x value
 li $t6,0 #stores random y value
 li $t7,0
 
-setSnakes:
-bgt $t4,11,end2
-li $a2,2
-move $a0,$t4
-move $a1,$t5
-jal _setLED
-addi $t4,$t4,1
-j setSnakes
-
-end2:
-li $t0,0
-li $t1,0
-li $t2,0
-li $t3,0
-li $t4,0 #counter for frog placements
-li $t5,0 #stores random x value
-li $t6,0 #stores random y value
-li $t7,0
-
 placeFrogs:
-bgt $t4,32,gameLoop #32 possible snakes
+bgt $t4,32,getAddresses #32 possible snakes
 addi $t4,$t4,1
 li $v0,42
 li $a0,5
@@ -149,39 +130,36 @@ jal _setLED
 addi $t7,$t7,1 #counts number of frogs on board
 j placeFrogs
 
+getAddresses:
+la $t4,snakeBuffer
+la $t5,snakeBufferExt
+
+initializeSnake:
+beq $t9,8,checkContents
+lb $t6,0($t4) #x-coordinate
+sb $t6,0($t5)
+lb $t8,1($t4)#y-coordinate
+sb $t8,1($t5)
+move $a0,$t6
+move $a1,$t8
+li $a2,2
+jal _setLED
+addi $t4,$t4,2
+addi $t5,$t5,2
+addi $t9,$t9,1
+j initializeSnake
+
+checkContents:
+la $t4,snakeBufferExt
+lb $t5,16($t4)
+li $v0,1
+move $a0,$t5
+syscall
+j exit
+
 gameLoop:
 
-moveUp:
-la $t4,snakeBuffer
-jal _queue_peek_end
-addi $v1,$v1,-1
-move $a0,$s0
-move $a1,$v1
-jal _getLED
-li $v0,32
-li $a0,200
-syscall
-jal _queue_insert
-jal _queue_remove 
-addi $v0,$v0,1
-sb $v0,0($t4)
-j gameLoop
 
-moveRight:
-la $t4,snakeBuffer
-jal _queue_peek_end
-addi $s0,$s0,1
-move $a0,$s0
-move $a1,$v1
-jal _getLED
-li $v0,32
-li $a0,200
-syscall
-jal _queue_insert
-jal _queue_remove
-addi $v0,$v0,1
-sb $v0,0($t4)
-j gameLoop
 
 _queue_insert:
 addi $sp,$sp,-4
