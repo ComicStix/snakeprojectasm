@@ -166,6 +166,32 @@ li $v0,32
 li $a0,200
 syscall
 
+moveLeft:
+jal _queue_peek_end
+addi $s4,$s0,-1
+move $a0,$s4
+move $a1,$s1
+jal _queue_insert
+jal _queue_remove
+li $v0,32
+li $a0,200
+syscall
+j moveUp
+
+moveDown:
+jal _queue_peek_end
+addi $s4,$s1,1
+move $a0,$s0
+move $a1,$s4
+jal _queue_insert
+jal _queue_remove
+li $v0,32
+li $a0,200
+syscall
+j moveDown
+
+
+
 moveRight:
 jal _queue_peek_end
 addi $s4,$s0,1
@@ -176,7 +202,7 @@ jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
-j moveUp
+j moveRight
 
 _queue_insert:
 addi $sp,$sp,-4
