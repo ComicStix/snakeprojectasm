@@ -154,16 +154,8 @@ la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
 
 gameLoop:
-li $a0,12
-li $a1,31
 jal _queue_insert
 jal _queue_peek_end
-li $v0,1
-move $a0,$s0
-syscall
-li $v0,1
-move $a0,$s1
-syscall
 j exit
 
 _queue_insert:
@@ -179,7 +171,17 @@ addi $sp,$sp,4
 jr $ra
 
 _queue_remove:
-
+addi $sp,$sp,4
+sw $ra,0($sp)
+lb $s2,0($t5) #x coordinate we want to remove
+lb $s3,1($t5) #y coordinate we want to remove
+addi $t5,$t5,2
+move $a0,$s2
+move $a1,$s3
+li $a2,0
+jal _setLED
+lw $ra,0($sp)
+jr $ra
 
 _queue_peek_end:
 lb $s0,0($t6) #returns x-value
