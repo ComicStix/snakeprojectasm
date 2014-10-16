@@ -154,9 +154,18 @@ la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
 
 gameLoop:
-jal _queue_insert
+
+moveRight:
 jal _queue_peek_end
-j exit
+addi $s4,$s0,1
+move $a0,$s4
+move $a1,$s1
+jal _queue_insert
+jal _queue_remove
+li $v0,32
+li $a0,200
+syscall
+j moveRight
 
 _queue_insert:
 addi $sp,$sp,-4
