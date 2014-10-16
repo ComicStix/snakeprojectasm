@@ -135,7 +135,7 @@ la $t4,snakeBuffer
 la $t5,snakeBufferExt
 
 initializeSnake:
-beq $t9,8,checkContents
+beq $t9,8,setHeadAndTail
 lb $t6,0($t4) #x-coordinate
 sb $t6,0($t5)
 lb $t8,1($t4)#y-coordinate
@@ -149,47 +149,28 @@ addi $t5,$t5,2
 addi $t9,$t9,1
 j initializeSnake
 
-checkContents:
-la $t4,snakeBufferExt
-lb $t5,16($t4)
-li $v0,1
-move $a0,$t5
-syscall
-j exit
+setHeadAndTail:
+la $t5,snakeBufferExt
+addi $t6,$t5,14
 
 gameLoop:
-
-
-
+jal _queue_peek_end
+#li $v0,1
+#move $a0,$s0
+#syscall
+li $v0,1
+move $a0,$s1
+syscall
+j exit
 _queue_insert:
-addi $sp,$sp,-4
-sw $ra,0($sp)
-move $a0,$s0 
-move $a1,$v1
-sb $s0,14($t4)
-sb $v1,15($t4)
-li $a2,2
-jal _setLED
-lw $ra,0($sp)
-addi $sp,$sp,4
-jr $ra
+
 
 _queue_remove:
-addi $sp,$sp,-4
-sw $ra,0($sp)
-lb $v0,0($t4)
-lb $v1,1($t4)
-move $a0,$v0
-move $a1,$v1
-li $a2,0
-jal _setLED
-lw $ra,0($sp)
-addi $sp,$sp,4
-jr $ra
+
 
 _queue_peek_end:
-lb $s0,14($t4) #returns x-value
-lb $v1,15($t4) #returns y-value
+#lb $s0,0($t6) #returns x-value
+lb $s1,1($t6) #returns y-value
 jr $ra
 
 exit:
