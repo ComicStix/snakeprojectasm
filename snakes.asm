@@ -150,26 +150,39 @@ addi $t9,$t9,1
 j initializeSnake
 
 setHeadAndTail:
-la $t5,snakeBufferExt
-addi $t6,$t5,14
+la $t5,snakeBufferExt #starting tail
+addi $t6,$t5,14 #starting head
 
 gameLoop:
+li $a0,12
+li $a1,31
+jal _queue_insert
 jal _queue_peek_end
-#li $v0,1
-#move $a0,$s0
-#syscall
+li $v0,1
+move $a0,$s0
+syscall
 li $v0,1
 move $a0,$s1
 syscall
 j exit
-_queue_insert:
 
+_queue_insert:
+addi $sp,$sp,-4
+sw $ra,0($sp)
+addi $t6,$t6,2
+sb $a0,0($t6) #x coordinate we want to insert
+sb $a1,1($t6) #y coordinate we want to insert
+li $a2,2
+jal _setLED
+lw $ra,0($sp)
+addi $sp,$sp,4
+jr $ra
 
 _queue_remove:
 
 
 _queue_peek_end:
-#lb $s0,0($t6) #returns x-value
+lb $s0,0($t6) #returns x-value
 lb $s1,1($t6) #returns y-value
 jr $ra
 
