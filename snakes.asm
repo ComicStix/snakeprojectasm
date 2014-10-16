@@ -169,16 +169,41 @@ addi $s4,$s1,-1
 #andi $s4,$s4,63
 move $a0,$s0
 move $a1,$s4
+jal _getLED
+beq $v0,3,moveUpHitFrog
 jal _queue_insert
 jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
 jal keyPress
-beq $v0,0xE1,moveDown
 beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveUp
+
+moveUpHitFrog:
+addi $s7,$s7,1
+beq $s7,$t7,exit
+jal _queue_insert
+li $v0,32
+li $a0,200
+syscall
+jal keyPress
+beq $v0,0xE2,moveLeft
+beq $v0,0xE3,moveRight
+j moveUp
+
+moveLeftHitFrog:
+addi $s7,$s7,1
+beq $s7,$t7,exit
+jal _queue_insert
+li $v0,32
+li $a0,200
+syscall
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
+j moveLeft
 
 moveLeft:
 jal _queue_peek_end
@@ -186,6 +211,8 @@ addi $s4,$s0,-1
 andi $s4,$s4,63
 move $a0,$s4
 move $a1,$s1
+jal _getLED
+beq $v0,3,moveLeftHitFrog
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -194,21 +221,33 @@ syscall
 jal keyPress
 beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
-beq $v0,0xE3,moveRight
 j moveLeft
+
+moveDownHitFrog:
+addi $s7,$s7,1
+beq $t7,$s7,exit
+jal _queue_insert
+li $v0,32
+li $a0,200
+syscall
+jal keyPress
+beq $v0,0xE2,moveLeft
+beq $v0,0xE3,moveRight
+j moveDown
 
 moveDown:
 jal _queue_peek_end
 addi $s4,$s1,1
 move $a0,$s0
 move $a1,$s4
+jal _getLED
+beq $v0,3,moveDownHitFrog
 jal _queue_insert
 jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
 jal keyPress
-beq $v0,0xE0,moveUp
 beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveDown
@@ -219,6 +258,8 @@ addi $s4,$s0,1
 andi $s4,$s4,63
 move $a0,$s4
 move $a1,$s1
+j _getLED
+beq $v0,3,moveRightHitFrog
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -227,7 +268,18 @@ syscall
 jal keyPress
 beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
-beq $v0,0xE2,moveLeft
+j moveRight
+
+moveRightHitFrog:
+addi $s7,$s7,1
+beq $s7,$t7,exit
+jal _queue_insert
+li $v0,32
+li $a0,200
+syscall
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
 j moveRight
 
 _queue_insert:
