@@ -1,3 +1,4 @@
+
 .data
 wall: .asciiz "****************************************************************",
 	      "*                                                              *",
@@ -149,6 +150,24 @@ addi $t7,$t7,1 #counts number of frogs on board
 j placeFrogs
 
 gameLoop:
+
+moveUp:
+la $t4,snakeBuffer
+jal _queue_peek_end
+addi $v1,$v1,-1
+move $a0,$s0
+move $a1,$v1
+jal _getLED
+li $v0,32
+li $a0,200
+syscall
+jal _queue_insert
+jal _queue_remove 
+addi $v0,$v0,1
+sb $v0,0($t4)
+j gameLoop
+
+moveRight:
 la $t4,snakeBuffer
 jal _queue_peek_end
 addi $s0,$s0,1
