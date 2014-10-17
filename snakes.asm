@@ -158,6 +158,9 @@ j initializeSnake
 setHeadAndTail:
 la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
+li $v0,30
+syscall
+move $t4,$a0
 
 gameLoop:
 li $v0,30
@@ -356,8 +359,7 @@ lb $s1,1($t6) #returns y-value
 jr $ra
 
 keyPress:
-la $t1,0xffff0000			
-#li $v0,0				
+la $t1,0xffff0000							
 lw $t0,0($t1)			
 beq $t0,$zero,keyPressJump	
 lw $v0,4($t1)
@@ -365,6 +367,10 @@ keyPressJump:
 jr $ra
 
 exit:
+li $v0,30
+syscall
+move $t9,$a0
+sub $t9,$t9,$t4
 li $v0,4
 la $a0, gameOver
 syscall
@@ -372,7 +378,7 @@ li $v0,4
 la $a0,playingTime
 syscall
 li $v0,1
-move $a0,$t8
+move $a0,$t9
 syscall
 li $v0,4
 la $a0,ms
@@ -388,10 +394,6 @@ la $a0,frogs
 syscall
 li $v0,10
 syscall
-
-
-
-#jal gameLoop
 
 # _setLED and _getLED functions for Keypad and LED Display Simulator (64x64)
 #
