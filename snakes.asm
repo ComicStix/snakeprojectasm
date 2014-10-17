@@ -1,7 +1,11 @@
-#andi $a0,$a0,63
-#$a0 is x or y value
-#x + whatever and then do an andi
+#Nicole Daniels
+#nld24@pitt.edu
 .data
+gameOver: .asciiz "Game over. \n"
+playingTime: .asciiz "The playing time was: "
+ms: .asciiz " ms. \n"
+score: .asciiz "The game score was "
+frogs: .asciiz " frogs."
 wall: .asciiz "****************************************************************",
 	      "*                                                              *",
 	      "*                                                              *",
@@ -156,6 +160,9 @@ la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
 
 gameLoop:
+li $v0,30
+move $t8,$a0
+syscall
 jal keyPress
 beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
@@ -172,6 +179,7 @@ move $a1,$s4
 jal _getLED
 beq $v0,3,moveUpHitFrog
 beq $v0,2,exit
+beq $v0,1,handleWallUp
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -182,10 +190,17 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveUp
 
+handleWallUp:
+addi $a0,$a0,1
+addi $a1,$a1,1
+jal _getLED
+beq $v0,1,moveLeft
+j moveRight
+
 moveUpHitFrog:
 addi $s7,$s7,1
-beq $s7,$t7,exit
 jal _queue_insert
+beq $s7,$t7,exit
 li $v0,32
 li $a0,200
 syscall
@@ -203,6 +218,7 @@ move $a1,$s1
 jal _getLED
 beq $v0,3,moveLeftHitFrog
 beq $v0,2,exit
+beq $v0,1,handleWallLeft
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -213,10 +229,17 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveLeft
 
+handleWallLeft:
+addi $a0,$a0,1
+addi $a1,$a1,-1
+jal _getLED
+beq $v0,1,moveDown
+j moveUp
+
 moveLeftHitFrog:
 addi $s7,$s7,1
-beq $s7,$t7,exit
 jal _queue_insert
+beq $s7,$t7,exit
 li $v0,32
 li $a0,200
 syscall
@@ -233,6 +256,7 @@ move $a1,$s4
 jal _getLED
 beq $v0,3,moveDownHitFrog
 beq $v0,2,exit
+beq $v0,1,handleWallDown
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -243,10 +267,17 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveDown
 
+handleWallDown:
+addi $a0,$a0,-1
+addi $a1,$a1,-1
+jal _getLED
+beq $v0,1,moveRight
+j moveLeft
+
 moveDownHitFrog:
 addi $s7,$s7,1
-beq $t7,$s7,exit
 jal _queue_insert
+beq $t7,$s7,exit
 li $v0,32
 li $a0,200
 syscall
@@ -263,6 +294,8 @@ move $a0,$s4
 move $a1,$s1
 jal _getLED
 beq $v0,3,moveRightHitFrog
+beq $v0,2,exit
+beq $v0,1,handleWallRight
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -273,11 +306,17 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveRight
 
+handleWallRight:
+addi $a0,$a0,-1
+addi $a1,$a1,-1
+jal _getLED
+beq $v0,1,moveDown
+j moveUp
 
 moveRightHitFrog:
 addi $s7,$s7,1
-beq $s7,$t7,exit
 jal _queue_insert
+beq $s7,$t7,exit
 li $v0,32
 li $a0,200
 syscall
@@ -327,10 +366,33 @@ keyPressJump:
 jr $ra
 
 exit:
+li $v0,30
+move $t8,$a0
+syscall
+sub $t8,$t8,$t7
+li $v0,4
+la $a0, gameOver
+syscall
+li $v0,4
+la $a0,playingTime
+syscall
+li $v0,1
+move $a0,$t8
+syscall
+li $v0,4
+la $a0,ms
+syscall
+li $v0,4
+la $a0,score
+syscall
+la $v0,1
+move $a0,$s7
+syscall
+li $v0,4
+la $a0,frogs
+syscall
 li $v0,10
 syscall
-#ateFrog:
-#addi $t9,$t9,1
 
 
 
