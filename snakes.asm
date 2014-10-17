@@ -171,6 +171,7 @@ move $a0,$s0
 move $a1,$s4
 jal _getLED
 beq $v0,3,moveUpHitFrog
+beq $v0,2,exit
 jal _queue_insert
 jal _queue_remove
 li $v0,32
@@ -193,6 +194,25 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveUp
 
+moveLeft:
+jal _queue_peek_end
+addi $s4,$s0,-1
+andi $s4,$s4,63
+move $a0,$s4
+move $a1,$s1
+jal _getLED
+beq $v0,3,moveLeftHitFrog
+beq $v0,2,exit
+jal _queue_insert
+jal _queue_remove
+li $v0,32
+li $a0,200
+syscall
+jal keyPress
+beq $v0,0xE0,moveUp
+beq $v0,0xE1,moveDown
+j moveLeft
+
 moveLeftHitFrog:
 addi $s7,$s7,1
 beq $s7,$t7,exit
@@ -205,28 +225,16 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveLeft
 
-moveLeft:
+moveDown:
 jal _queue_peek_end
-addi $s4,$s0,-1
-andi $s4,$s4,63
-move $a0,$s4
-move $a1,$s1
+addi $s4,$s1,1
+move $a0,$s0
+move $a1,$s4
 jal _getLED
-beq $v0,3,moveLeftHitFrog
+beq $v0,3,moveDownHitFrog
+beq $v0,2,exit
 jal _queue_insert
 jal _queue_remove
-li $v0,32
-li $a0,200
-syscall
-jal keyPress
-beq $v0,0xE0,moveUp
-beq $v0,0xE1,moveDown
-j moveLeft
-
-moveDownHitFrog:
-addi $s7,$s7,1
-beq $t7,$s7,exit
-jal _queue_insert
 li $v0,32
 li $a0,200
 syscall
@@ -235,15 +243,10 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveDown
 
-moveDown:
-jal _queue_peek_end
-addi $s4,$s1,1
-move $a0,$s0
-move $a1,$s4
-jal _getLED
-beq $v0,3,moveDownHitFrog
+moveDownHitFrog:
+addi $s7,$s7,1
+beq $t7,$s7,exit
 jal _queue_insert
-jal _queue_remove
 li $v0,32
 li $a0,200
 syscall
@@ -258,7 +261,7 @@ addi $s4,$s0,1
 andi $s4,$s4,63
 move $a0,$s4
 move $a1,$s1
-j _getLED
+jal _getLED
 beq $v0,3,moveRightHitFrog
 jal _queue_insert
 jal _queue_remove
@@ -269,6 +272,7 @@ jal keyPress
 beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveRight
+
 
 moveRightHitFrog:
 addi $s7,$s7,1
@@ -295,7 +299,7 @@ addi $sp,$sp,4
 jr $ra
 
 _queue_remove:
-addi $sp,$sp,4
+addi $sp,$sp,-4
 sw $ra,0($sp)
 lb $s2,0($t5) #x coordinate we want to remove
 lb $s3,1($t5) #y coordinate we want to remove
@@ -305,6 +309,7 @@ move $a1,$s3
 li $a2,0
 jal _setLED
 lw $ra,0($sp)
+addi $sp,$sp,4
 jr $ra
 
 _queue_peek_end:
