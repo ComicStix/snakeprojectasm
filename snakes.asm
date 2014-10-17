@@ -161,7 +161,7 @@ addi $t6,$t5,14 #starting head
 
 gameLoop:
 li $v0,30
-move $t8,$a0
+move $t8,$a1
 syscall
 jal keyPress
 beq $v0,0xE0,moveUp
@@ -173,7 +173,6 @@ j gameLoop
 moveUp:
 jal _queue_peek_end
 addi $s4,$s1,-1
-#andi $s4,$s4,63
 move $a0,$s0
 move $a1,$s4
 jal _getLED
@@ -198,8 +197,8 @@ beq $v0,1,moveLeft
 j moveRight
 
 moveUpHitFrog:
-addi $s7,$s7,1
 jal _queue_insert
+addi $s7,$s7,1
 beq $s7,$t7,exit
 li $v0,32
 li $a0,200
@@ -237,8 +236,8 @@ beq $v0,1,moveDown
 j moveUp
 
 moveLeftHitFrog:
-addi $s7,$s7,1
 jal _queue_insert
+addi $s7,$s7,1
 beq $s7,$t7,exit
 li $v0,32
 li $a0,200
@@ -275,8 +274,8 @@ beq $v0,1,moveRight
 j moveLeft
 
 moveDownHitFrog:
-addi $s7,$s7,1
 jal _queue_insert
+addi $s7,$s7,1
 beq $t7,$s7,exit
 li $v0,32
 li $a0,200
@@ -314,8 +313,8 @@ beq $v0,1,moveDown
 j moveUp
 
 moveRightHitFrog:
-addi $s7,$s7,1
 jal _queue_insert
+addi $s7,$s7,1
 beq $s7,$t7,exit
 li $v0,32
 li $a0,200
@@ -366,10 +365,6 @@ keyPressJump:
 jr $ra
 
 exit:
-li $v0,30
-move $t8,$a0
-syscall
-sub $t8,$t8,$t7
 li $v0,4
 la $a0, gameOver
 syscall
