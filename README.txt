@@ -1,0 +1,7 @@
+Nicole Daniels
+nld24@pitt.edu
+
+I used a queue to manipulate the snake. First, I put the starting coordinates of the snake in a byte array called SnakeBuffer. I then transferred the contents of snakeBuffer to the 512 byte buffer snakeBufferExt. I set the starting coordinates to yellow LED’s to initialize the snake. I used $t5 to keep track of the address of the tail in snakeBufferExt and $t6 to keep track of the address of the head in snakeBufferExt. Whenever I wanted to peek at the head, I called _queue_peek_end and looked at the address of the end of the queue(head) to find the x and y coordinates. If I wanted to insert coordinates at the head of the snake, I called _queue_insert and added 2 to the address of the previous head and added the new x and y coordinates. This in effect changed the head address. Whenever I wanted to remove the tail, I called _queue_remove and added two to the address of the previous tail and set that address as the new tail. I turned the coordinates that were removed to black. The queue uses a FIFO architecture (first in, first out).
+
+Bugs:
+Everything works, just make sure not to press the buttons too fast instructions like the instructions warn of say or it freezes. 

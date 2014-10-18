@@ -34,7 +34,7 @@ wall: .asciiz "****************************************************************"
 	      "*        ******************                                    *",
 	      "*        *                *                                    *",
 	      "*        *   *******      *                                    *",
-	      "*        *   *     *      *                                    *",
+	      "*        *   *******      *                                    *",
 	      "*        *   *******      *                                    *",
 	      "*                         *                                    *",
  	      "*               ***********                                    *",
@@ -76,7 +76,7 @@ snakeBufferExt: .space 512
 .text
 la $t4,wall
 
-assembleBoard:
+assembleBoard: #main function for assembling the board (walls)
 lb $t5,0($t4)
 beq $t5,0x2a,foundAsterik
 beq $t5,0,nextLine
@@ -84,7 +84,7 @@ addi $t6,$t6,1
 addi $t4,$t4,1
 j assembleBoard
 
-foundAsterik:
+foundAsterik: #if the loop encounters an asterik, set the LED to red
 move $a0,$t6
 move $a1,$t7
 li $a2,1
@@ -93,7 +93,7 @@ addi $t4,$t4,1
 addi $t6,$t6,1
 j assembleBoard
 
-nextLine:
+nextLine: #if the loop encounters a /0 character, increment the y coordinate so we can search the next line
 addi $v0,$v0,1
 beq $v0,64,end
 addi $t7,$t7,1
@@ -101,17 +101,17 @@ li $t6,0
 addi $t4,$t4,1
 j assembleBoard
 
-end:
+end: #reset the variables
 li $t0,0
 li $t1,0
 li $t2,0
 li $t3,0
-li $t4,4 #counter for frog placements
-li $t5,31 #stores random x value
+li $t4,0 #counter for frog placement attempts
+li $t5,0 #stores random x value
 li $t6,0 #stores random y value
-li $t7,0
+li $t7,0 #stores the final amount of frogs successfully placed on the board
 
-placeFrogs:
+placeFrogs: #routine for placing frogs on the board
 bgt $t4,32,getAddresses #32 possible snakes
 addi $t4,$t4,1
 li $v0,42
@@ -131,16 +131,16 @@ jal _getLED
 beq $v0,0,validPosition
 j placeFrogs
 
-validPosition:
+validPosition: #frog can be placed on the board. No wall, snake, or other frog already exists on location
 jal _setLED
-addi $t7,$t7,1 #counts number of frogs on board
+addi $t7,$t7,1 #counts number of frogs successfully placed on board
 j placeFrogs
 
 getAddresses:
 la $t4,snakeBuffer
 la $t5,snakeBufferExt
 
-initializeSnake:
+initializeSnake: #places the snake in the snakeBufferExt and makes it appear on the board
 beq $t9,8,setHeadAndTail
 lb $t6,0($t4) #x-coordinate
 sb $t6,0($t5)
@@ -155,14 +155,14 @@ addi $t5,$t5,2
 addi $t9,$t9,1
 j initializeSnake
 
-setHeadAndTail:
+setHeadAndTail: #set the address of the starting head and tail addresses, starts game timer
 la $t5,snakeBufferExt #starting tail
 addi $t6,$t5,14 #starting head
 li $v0,30
 syscall
 move $t4,$a0
 
-gameLoop:
+gameLoop: #main play loop, game starts when user pressed a vaiid key
 li $v0,30
 move $t8,$a1
 syscall
@@ -173,7 +173,7 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j gameLoop
 
-moveUp:
+moveUp: #moves snake in the up direction
 jal _queue_peek_end
 addi $s4,$s1,-1
 move $a0,$s0
@@ -192,14 +192,14 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveUp
 
-handleWallUp:
+handleWallUp: #handles what the snake should do if it's moving up and there's a wall at the next position
 addi $a0,$a0,1
 addi $a1,$a1,1
 jal _getLED
 beq $v0,1,moveLeft
 j moveRight
 
-moveUpHitFrog:
+moveUpHitFrog: #handles what the snake should do if it's moving up and there's a frog in the next position
 jal _queue_insert
 addi $s7,$s7,1
 beq $s7,$t7,exit
@@ -211,7 +211,7 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveUp
 
-moveLeft:
+moveLeft: #moves the snake left
 jal _queue_peek_end
 addi $s4,$s0,-1
 andi $s4,$s4,63
@@ -231,14 +231,14 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveLeft
 
-handleWallLeft:
+handleWallLeft: #handles what the snake should do if there's a wall in the next position while moving left
 addi $a0,$a0,1
 addi $a1,$a1,-1
 jal _getLED
 beq $v0,1,moveDown
 j moveUp
 
-moveLeftHitFrog:
+moveLeftHitFrog: #handles what the snake should do if there's a frog in the next position while moving left
 jal _queue_insert
 addi $s7,$s7,1
 beq $s7,$t7,exit
@@ -250,7 +250,7 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveLeft
 
-moveDown:
+moveDown: #moves the frog down
 jal _queue_peek_end
 addi $s4,$s1,1
 move $a0,$s0
@@ -269,14 +269,14 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveDown
 
-handleWallDown:
+handleWallDown: #handles what the snake should do if there's a wall in the next position while moving down
 addi $a0,$a0,-1
 addi $a1,$a1,-1
 jal _getLED
 beq $v0,1,moveRight
 j moveLeft
 
-moveDownHitFrog:
+moveDownHitFrog: #handles what the snake should do if it's moving down and encounters a frog
 jal _queue_insert
 addi $s7,$s7,1
 beq $t7,$s7,exit
@@ -288,7 +288,7 @@ beq $v0,0xE2,moveLeft
 beq $v0,0xE3,moveRight
 j moveDown
 
-moveRight:
+moveRight: #moves the snake right
 jal _queue_peek_end
 addi $s4,$s0,1
 andi $s4,$s4,63
@@ -308,14 +308,14 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveRight
 
-handleWallRight:
+handleWallRight: #handles what the snake should do if there's a wall in the next position while moving right
 addi $a0,$a0,-1
 addi $a1,$a1,-1
 jal _getLED
 beq $v0,1,moveDown
 j moveUp
 
-moveRightHitFrog:
+moveRightHitFrog: #handles what the snake should do if it's moving right and it encounters a frog
 jal _queue_insert
 addi $s7,$s7,1
 beq $s7,$t7,exit
@@ -327,7 +327,7 @@ beq $v0,0xE0,moveUp
 beq $v0,0xE1,moveDown
 j moveRight
 
-_queue_insert:
+_queue_insert: #inserts coordinates at the end of the queue(head), changes address of the head, sets to yellow
 addi $sp,$sp,-4
 sw $ra,0($sp)
 addi $t6,$t6,2
@@ -339,7 +339,7 @@ lw $ra,0($sp)
 addi $sp,$sp,4
 jr $ra
 
-_queue_remove:
+_queue_remove: #removes coordinates at the beginning of the queue(tail), changes address of the tail, sets to black
 addi $sp,$sp,-4
 sw $ra,0($sp)
 lb $s2,0($t5) #x coordinate we want to remove
@@ -353,12 +353,12 @@ lw $ra,0($sp)
 addi $sp,$sp,4
 jr $ra
 
-_queue_peek_end:
+_queue_peek_end: #finds the coordinates at the end of the queue(head)
 lb $s0,0($t6) #returns x-value
 lb $s1,1($t6) #returns y-value
 jr $ra
 
-keyPress:
+keyPress: #detects if a key is pressed
 la $t1,0xffff0000							
 lw $t0,0($t1)			
 beq $t0,$zero,keyPressJump	
@@ -366,7 +366,7 @@ lw $v0,4($t1)
 keyPressJump:
 jr $ra
 
-exit:
+exit: #handles game over conditions, prints game over screen, and terminates game
 li $v0,30
 syscall
 move $t9,$a0
